@@ -11,7 +11,7 @@
 # import all the fabric functions that we need explicitly
 from fabric.api import env, roles, sudo, execute, put, run, local, lcd, prompt, cd, parallel, settings, hide, quiet 
 from fabric.contrib.files import exists, append, contains
-from fabric.operations import *
+import fabric.operations
 # import platform module to test the machine type.
 # Non Fabric library fabric related imports: import entire module to enable code & namespace management at scale.
 
