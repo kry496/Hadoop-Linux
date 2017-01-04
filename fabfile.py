@@ -45,10 +45,10 @@ export HADOOP_JAR=/usr/local/hadoop/hadoop/share/hadoop/mapreduce
 export JAVA_HOME=/usr/lib/jvm/default-java
 
 # Some convenient aliases and functions for running Hadoop-related commands
-unalias fs &> /dev/null
-alias fs="hdfs"
-unalias hls &> /dev/null
-alias hls="fs -ls"
+#unalias fs &> /dev/null
+#alias fs="hdfs"
+#unalias hls &> /dev/null
+#alias hls="fs -ls"
 
 
 # If you have LZO compression enabled in your Hadoop cluster and
@@ -60,19 +60,17 @@ alias hls="fs -ls"
 # Note : we are not compressing  !!!!!!  Yet !!!!
 # Requires installed 'lzop' command.
 #
-lzohead () {
-    hadoop fs -cat $1 | lzop -dc | head -1000 | less
-}
 
 # Add Hadoop bin/ directory to PATH
 
 export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+
 """
 
 # Update the Roledef environment variable to define the set of master and slave nodes for the hadoop configuration.
 env.roledefs = {
-    'masternode': '192.168.0.1',
-    'slavenodes': ['192.168.0.2', '192.168.0.3'],
+    'masternode': ['192.168.56.103'],
+    'slavenodes': ['192.168.56.104', '192.168.0.107'],
 }
 
 # List Comprehension to define all sevever in a single list to apply certain settings to all servers 
@@ -108,13 +106,13 @@ download_hadoop = {
 
 # Install JDK depending on the linux distribution
 def _java_distro():
-	with settings(sudo_user = hduser, warn_only=True)
+	with settings(sudo_user = hduser, warn_only=True):
 		if 'ubuntu' in platform.platform().lower:
-            sudo('apt-get -y install default-jdk')
+			sudo('apt-get -y install default-jdk')
 		elif 'centos' in platform().lower:
-            sudo('yum install -y default-jdk')
+			sudo('yum install -y default-jdk')
 		else:
-            print 'this script works only on ubuntu or centos linux distribution'
+                        print 'this script works only on ubuntu or centos linux distribution'
 			print 'exiting the script'
 
 			
@@ -128,7 +126,7 @@ def  java_install():
             elif a.return_code  == 0:
                 print ' java is installed'
             else:
-				print 'unknown return_code'
+		print 'unknown return_code'
 
 
 
@@ -137,13 +135,13 @@ def  java_install():
 # install ssh as hduser and using sudo
 
 def _ssh_distro():
-	with settings(sudo_user = hduser, warn_only=True)
-	    if 'ubuntu' in platform.platform().lower:
+	with settings (sudo_user = hduser, warn_only=True):  
+		if 'ubuntu' in platform.platform().lower:
 			sudo('apt-get install openssh-server')
 		elif 'centos' in platform.platform().lower:
 			sudo('yum install -y openssh-server')
 		else:
-            print 'this script works only on ubuntu or centos linux distribution'
+           		print 'this script works only on ubuntu or centos linux distribution'
 			print 'exiting the script'
 
 			
@@ -153,18 +151,18 @@ def _ssh_distro():
 @parallel
 @roles('all')
 def  ssh_install():
-    with quiet():
+	with quiet():
 		a =  local('which openssh')
-        if a.return_code >= 1:
-            _ssh_distro
-        elif a.return_code  == 0:
-            print ' SSH server is installed'
-        else:
-            print 'unknown return_code'	
-@run_once
+        	if a.return_code >= 1:
+			_ssh_distro
+        	elif a.return_code  == 0:
+                	print ' SSH server is installed'
+                else:
+                        print 'unknown return_code'	
+
 @roles('masternode')
 def copy_ssh_key():
-	with settings(sudo_user = hduser, warn_only=True)
+	with settings(sudo_user = hduser, warn_only=True):
 		sudo('ssh-keygen -t rsa -P "" -f /home/hduser/.ssh/id_rsa')
 		sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys")
 		sudo("chmod 0600 /home/hduser/.ssh/authorized_keys")
@@ -197,9 +195,14 @@ def upgrade_servers():
 	elif 'centos' in platform.platform().lower:
 		sudo("yum -y upgrade",pty=True)
 	else:
-        print 'this script works only on ubuntu or centos linux distribution'
+        	print 'this script works only on ubuntu or centos linux distribution'
 		print 'exiting the script'
 
+
+
+@roles('all')
+def fab_test():
+	sudo('wall fabric is running on these the hosts', pty=True)
 
 
 
@@ -211,6 +214,6 @@ def deploy():
     execute(create_hduser)
     execute(java_install)
     execute(ssh_install)
-    execute(copy_ssh_key)
-	execute(update_bashrc)
+    execute(copy_ssh_key)	
+    execute(update_bashrc)
 
