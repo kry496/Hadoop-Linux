@@ -1,0 +1,14 @@
+from os import system
+from platform import platform
+from fabric.api import settings, local, run
+from fabric.context_managers import  hide, quiet
+
+# installing java
+
+env.roledefs = {
+    'masternode': '192.168.0.1',
+    'slavenodes': ['192.168.0.2', '192.168.0.3'],
+
+
+for x in env.roledefs['slavenodes']:
+	print x
