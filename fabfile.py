@@ -25,7 +25,7 @@ import os
 
 import StringIO
 
-# import exits, append, contains 
+# import exists, append, contains 
 
 from fabric.contrib.files import exists,append,contains
 
@@ -132,39 +132,9 @@ def  java_install():
 
 
 
-# Install OPENSSH server depending on the linux distribution
-# add the user hduser
-# install ssh as hduser and using sudo
-
-def _ssh_distro():
-	with settings (sudo_user = hduser, warn_only=True):  
-		if 'ubuntu' in platform.platform().lower:
-			sudo('apt-get install openssh-server')
-		elif 'centos' in platform.platform().lower:
-			sudo('yum install -y openssh-server')
-		else:
-           		print 'this script works only on ubuntu or centos linux distribution'
-			print 'exiting the script'
-
-			
-# why are we installing openssh when fabric already uses ssh ? hadoop needs to communicate between the nodes.
-			
-			
-@parallel
-@roles('all')
-def  ssh_install():
-	with quiet():
-		a =  local('which openssh')
-        	if a.return_code >= 1:
-			_ssh_distro
-        	elif a.return_code  == 0:
-                	print ' SSH server is installed'
-                else:
-                        print 'unknown return_code'	
-
 @roles('masternode')
 def copy_ssh_key():
-	with settings(sudo_user = hduser, warn_only=True):
+	with settings(sudo_user ='hduser', warn_only=True):
 		sudo('ssh-keygen -t rsa -P "" -f /home/hduser/.ssh/id_rsa')
 		sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys")
 		sudo("chmod 0600 /home/hduser/.ssh/authorized_keys")
@@ -178,11 +148,10 @@ def copy_ssh_key():
 # fabric.contrib.files.append(filename, text, use_sudo=False, partial=False, escape=True, shell=False)
 # even with settings (sudo_user .... we need to specify the parameters above for the command to go through)
 				  
-@parallel
-@roles('all')
+@roles('masternode')
 def update_bashrc():
-	with settings (sudo_user ='hduser'):
-		if exits('/home/hduser/.bashrc', use_sudo=True):
+	with settings (warn_only=True):
+		if exists('/home/hduser/.bashrc', use_sudo=True):
 			append('/home/hduser/.bashrc', bashrc_updates, use_sudo=True)
 			sudo('source /home/hduser/.bashrc', pty=True)
 		else:
