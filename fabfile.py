@@ -139,7 +139,7 @@ def download_files():
 	with cd(hadoop_dir):
 		for url in download_hadoop['masternode']:
 			filename = "%s/%s" %(hadoop_dir, os.path.basename(url))
-			sudo('wget --no-cache %s -O %s' %(url, filename), pty=True)
+			run('wget --no-cache %s -O %s' %(url, filename))
 	
 
 @roles('masternode')
@@ -152,7 +152,7 @@ def download_test_files():
 		with cd(test_dir):
 			for url in test_files['masternode']:
 				testfilename = "%s/%s" %(test_dir, os.path.basename(url))
-				sudo('wget --no-cache %s -O %s' %(url, testfilename), pty=True)
+				run('wget --no-cache %s -O %s' %(url, testfilename))
 
 
 
