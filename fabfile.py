@@ -229,3 +229,5 @@ def deploy():
     execute(copy_ssh_key)	
     execute(update_bashrc)
     execute(update_hostfile)
+    execute(disable_ipv6)
+
