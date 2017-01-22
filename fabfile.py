@@ -69,8 +69,8 @@ export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
 # Update the Roledef environment variable to define the set of master and slave nodes for the hadoop configuration.
 env.roledefs = {
-    'masternode': ['192.168.56.103'],
-    'slavenodes': ['192.168.56.104', '192.168.0.107'],
+    'masternode': ['192.168.56.122'],
+    'slavenodes': ['192.168.56.121', '192.168.56.126'],
 }
 
 # List Comprehension to define all sevever in a single list to apply certain settings to all servers 
@@ -81,9 +81,12 @@ env.roledefs['all'] = [x for y in env.roledefs.values() for x in y]
 #   'masternode': ['default-jdk','openssh-server',],
 #   'slavenodes': ['default-jdk','openssh-server',]
 #}
+#
+env.user='hduser'
+env.sudo_password='Lab1lab2'
 
 # lets create a hadoop user 
-@parallel
+#      @parallel
 @roles('all')
 def create_hduser():
 	if run('id -u hduser', warn_only=True).return_code == 1:
@@ -106,7 +109,7 @@ download_hadoop = {
 
 # Install JDK depending on the linux distribution
 def _java_distro():
-	with settings(sudo_user = hduser, warn_only=True):
+	with settings(warn_only=True):
 		if 'ubuntu' in platform.platform().lower:
 			sudo('apt-get -y install default-jdk')
 		elif 'centos' in platform().lower:
@@ -116,16 +119,15 @@ def _java_distro():
 			print 'exiting the script'
 
 			
-@parallel
 @roles('all')	
 def  java_install():
-        with quiet():
-            a =  run('which java')
-            if a.return_code >= 1:
-                _java_distro
-            elif a.return_code  == 0:
-                print ' java is installed'
-            else:
+# with quiet():
+	a =  run('which java')
+        if a.return_code >= 1:
+        	_java_distro
+        elif a.return_code  == 0:
+        	print ' java is installed'
+        else:
 		print 'unknown return_code'
 
 
