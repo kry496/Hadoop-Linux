@@ -155,11 +155,6 @@ def download_test_files():
 				run('wget --no-cache %s -O %s' %(url, testfilename))
 
 
-
-
-
-
- 		 
 # Install JDK depending on the linux distribution
 
 def _java_distro():
@@ -193,7 +188,7 @@ def create_ssh_key():
 		sudo('ssh-keygen -t rsa -P"" -f /home/hduser/.ssh/id_rsa')
 		sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys")
 		sudo("chmod 600 /home/hduser/.ssh/authorized_keys")
-		
+		sudo("/etc/init.d/ssh reload")
 
 @roles('slavenodes')
 def copy_ssh_key():
@@ -202,6 +197,7 @@ def copy_ssh_key():
 		sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys")
 		sudo("chmod 0600 /home/hduser/.ssh/authorized_keys")
 		sudo("ssh-keyscan -H master >> /home/hduser/.ssh/known_hosts")
+		sudo("/etc/init.d/ssh reload")
 		
 		
 
