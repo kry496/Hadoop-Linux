@@ -29,6 +29,8 @@ import StringIO
 
 from fabric.contrib.files import exists,append,contains
 
+
+
 #add to bash file
 
 bashrc_updates = """
@@ -75,6 +77,16 @@ env.roledefs = {
 
 # List Comprehension to define all sevever in a single list to apply certain settings to all servers 
 env.roledefs['all'] = [x for y in env.roledefs.values() for x in y]
+
+#add to /etc/hosts file
+
+hosts_file_update='''
+192.168.56.122 master
+192.168.56.126 slave1
+192.168.56.121 slave2
+
+'''
+
 
 # Define the list of packages required. # setting up the dictionary for scaling the script.
 #packages_required = {
@@ -126,8 +138,9 @@ def  java_install():
         if a.return_code >= 1:
         	_java_distro
         elif a.return_code  == 0:
-        	print ' java is installed'
-        else:
+        	print ' java is installed on %s' %(platform.node())
+        	run('hostname', pty=True)
+	else:
 		print 'unknown return_code'
 
 
@@ -148,7 +161,7 @@ def copy_ssh_key():
 # fabric.contrib.files.append(filename, text, use_sudo=False, partial=False, escape=True, shell=False)
 # even with settings (sudo_user .... we need to specify the parameters above for the command to go through)
 				  
-@roles('masternode')
+@roles('all')
 def update_bashrc():
 	with settings (warn_only=True):
 		if exists('/home/hduser/.bashrc', use_sudo=True):
@@ -160,7 +173,17 @@ def update_bashrc():
 		else:
 			print 'hduser doesnt exist'
 
-				  
+@parallel				  
+@roles('all')
+def update_hostfile():
+	with settings (warn_only=True):
+		if not contains('/etc/hosts', 'master'):
+			append('/etc/hosts', hosts_file_update, use_sudo=True)
+		else:
+			print ' the etc host file is already updated on %s' %(plattform.node())
+
+		
+
 
 @roles("all") # this decorater will make the the function following it  run for all servers
 def upgrade_servers():
@@ -190,4 +213,4 @@ def deploy():
     execute(ssh_install)
     execute(copy_ssh_key)	
     execute(update_bashrc)
-
+    execute(update_hostfile)
