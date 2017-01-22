@@ -86,6 +86,13 @@ hosts_file_update='''
 192.168.56.121 slave2
 
 '''
+#disable ipv6
+
+sysctl_update='''
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1'''
+
 
 
 # Define the list of packages required. # setting up the dictionary for scaling the script.
@@ -188,6 +195,15 @@ def update_hostfile():
 		else:
 			print ' the etc host file is already updated'
 
+@parallel
+@roles('all')
+def disable_ipv6():
+	with settings (warn_only=True):
+		if not contains('/proc/sys/net/ipv6/conf/all/disable_ipv6', '1'):
+			append('/etc/sysctl.conf', sysctl_update, use_sudo=True)
+			sudo('sysctl -p', pty=True)
+		else:
+			print 'IPV6 is already disable'
 		
 
 @parallel
