@@ -124,25 +124,24 @@ def _java_distro():
 	with settings(warn_only=True):
 		if 'ubuntu' in platform.platform().lower:
 			sudo('apt-get -y install default-jdk')
-		elif 'centos' in platform().lower:
+		elif 'centos' in platform.platform().lower:
 			sudo('yum install -y default-jdk')
 		else:
                         print 'this script works only on ubuntu or centos linux distribution'
 			print 'exiting the script'
 
-			
+@parallel			
 @roles('all')	
 def  java_install():
-# with quiet():
-	a =  run('which java')
-        if a.return_code >= 1:
-        	_java_distro
-        elif a.return_code  == 0:
-        	print ' java is installed on %s' %(platform.node())
-        	run('hostname', pty=True)
-	else:
-		print 'unknown return_code'
-
+	with quiet():
+		a =  run('which java')
+       		if a.return_code >= 1:
+        		_java_distro
+	        elif a.return_code  == 0:
+	        	print ' java is installed'
+		else:
+			print 'unknown return_code'
+	
 
 
 @roles('masternode')
@@ -180,7 +179,7 @@ def update_hostfile():
 		if not contains('/etc/hosts', 'master'):
 			append('/etc/hosts', hosts_file_update, use_sudo=True)
 		else:
-			print ' the etc host file is already updated on %s' %(plattform.node())
+			print ' the etc host file is already updated'
 
 		
 
