@@ -124,8 +124,27 @@ test_files = {
 
 download_hadoop = {
 	'masternode' : ['http://www-eu.apache.org/dist/hadoop/core/hadoop-2.7.3/hadoop-2.7.3.tar.gz']
-				  }
+}
 
+
+#download the files with the function
+
+@roles('masternode')
+def download_files():
+	hadoop_dir = "/usr/local/hadoop"
+	test_dir = "/home/hduser/"
+	with cd(hadoop_dir):
+		for url in download_hadoop['masternode']:
+			filename = "%s/%s" %(hadoop_dir, os.path.basename(url))
+			run('wget --no-cache %s -O %s' %(url, filename))
+	with cd(test_dir):
+		for url in test_files['masternode']:
+			testfilename = "%s/%s" %(test_dir, os.path.basename(testfiles))
+			run('wget --no-cache %s -O %s' %(url, testfilename)
+
+
+
+ 		 
 # Install JDK depending on the linux distribution
 def _java_distro():
 	with settings(warn_only=True):
