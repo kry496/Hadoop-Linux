@@ -152,8 +152,11 @@ def copy_ssh_key():
 def update_bashrc():
 	with settings (warn_only=True):
 		if exists('/home/hduser/.bashrc', use_sudo=True):
-			append('/home/hduser/.bashrc', bashrc_updates, use_sudo=True)
-			sudo('source /home/hduser/.bashrc', pty=True)
+			if not contains('/home/hduser/.bashrc', "HADOOP"):
+				append('/home/hduser/.bashrc', bashrc_updates, use_sudo=True)
+				sudo('source /home/hduser/.bashrc', pty=True)
+			else:
+				print " HADOOP ENVs are already updated"
 		else:
 			print 'hduser doesnt exist'
 
