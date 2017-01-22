@@ -142,24 +142,31 @@ def  java_install():
 		else:
 			print 'unknown return_code'
 	
-
-
 @roles('masternode')
+def create_ssh_key():
+	with settings (warn_only=True):
+		sudo('ssh-keygen -t rsa -P"" -f /home/hduser/.ssh/id_rsa')
+		sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys")
+		sudo("chmod 600 /home/hduser/.ssh/authorized_keys")
+		
+
+@roles('slavenodes')
 def copy_ssh_key():
-	with settings(sudo_user ='hduser', warn_only=True):
+	with settings (warn_only=True):
 		sudo('ssh-keygen -t rsa -P "" -f /home/hduser/.ssh/id_rsa')
 		sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys")
 		sudo("chmod 0600 /home/hduser/.ssh/authorized_keys")
-		sudo("ssh-keyscan -H localhost >> /home/hduser/.ssh/known_hosts")
-		for x in env.roledefs['slavenodes']:
-			sudo('ssh-copy-id hduser@%s' % x)
+		sudo("ssh-keyscan -H master >> /home/hduser/.ssh/known_hosts")
+		
 		
 
 
 # lets append the bashrc_updates text to the bashrc file of HDUSER
 # fabric.contrib.files.append(filename, text, use_sudo=False, partial=False, escape=True, shell=False)
 # even with settings (sudo_user .... we need to specify the parameters above for the command to go through)
-				  
+
+
+@parallel				  
 @roles('all')
 def update_bashrc():
 	with settings (warn_only=True):
@@ -183,7 +190,7 @@ def update_hostfile():
 
 		
 
-
+@parallel
 @roles("all") # this decorater will make the the function following it  run for all servers
 def upgrade_servers():
 	if 'ubuntu' in platform.platform().lower:
@@ -196,12 +203,6 @@ def upgrade_servers():
 
 
 
-@roles('all')
-def fab_test():
-	sudo('wall fabric is running on these the hosts', pty=True)
-
-
-
 # this is the main function we will be calling to get it all running
 def deploy():
     # note here that the execute function has the names of the functions we
@@ -209,7 +210,6 @@ def deploy():
     execute(upgrade_servers)
     execute(create_hduser)
     execute(java_install)
-    execute(ssh_install)
     execute(copy_ssh_key)	
     execute(update_bashrc)
     execute(update_hostfile)
