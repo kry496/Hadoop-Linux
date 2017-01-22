@@ -132,29 +132,48 @@ download_hadoop = {
 @roles('masternode')
 def download_files():
 	hadoop_dir = "/usr/local/hadoop"
-	test_dir = "/home/hduser/"
+	if not exists('usr/local/hadoop', use_sudo=True):
+		sudo('mkdir -p %s' %hadoop_dir, pty=True)
+		sudo('chown hduser:hadoopadmin %s' % hadoop_dir, pty=True)
+		sudo('chmod g+s %s' %hadoop_dir, pty=True)
 	with cd(hadoop_dir):
 		for url in download_hadoop['masternode']:
 			filename = "%s/%s" %(hadoop_dir, os.path.basename(url))
-			run('wget --no-cache %s -O %s' %(url, filename))
-	with cd(test_dir):
-		for url in test_files['masternode']:
-			testfilename = "%s/%s" %(test_dir, os.path.basename(testfiles))
-			run('wget --no-cache %s -O %s' %(url, testfilename)
+			sudo('wget --no-cache %s -O %s' %(url, filename), pty=True)
+	
+
+@roles('masternode')
+def download_test_files():
+	test_dir = '/home/hduser/test'
+	if not exists('/home/hduser/test/(*?).*', use_sudo=True):
+		sudo('mkdir -p %s' %test_dir, pty=True)
+		sudo('chown -R hduser:hadoopadmin %s' %test_dir, pty=True)
+		sudo('chmod g+s %s' %test_dir, pty=True)
+		with cd(test_dir):
+			for url in test_files['masternode']:
+				testfilename = "%s/%s" %(test_dir, os.path.basename(url))
+				sudo('wget --no-cache %s -O %s' %(url, testfilename), pty=True)
+
+
+
 
 
 
  		 
 # Install JDK depending on the linux distribution
+
 def _java_distro():
-	with settings(warn_only=True):
-		if 'ubuntu' in platform.platform().lower:
+	with settings (warn_only=True):
+		if 'ubuntu' in platform.platform().lower():
 			sudo('apt-get -y install default-jdk')
-		elif 'centos' in platform.platform().lower:
+		elif 'centos' in platform.platform().lower():
 			sudo('yum install -y default-jdk')
 		else:
                         print 'this script works only on ubuntu or centos linux distribution'
 			print 'exiting the script'
+
+
+
 
 @parallel			
 @roles('all')	
@@ -162,7 +181,7 @@ def  java_install():
 	with quiet():
 		a =  run('which java')
        		if a.return_code >= 1:
-        		_java_distro
+        		_java_distro()
 	        elif a.return_code  == 0:
 	        	print ' java is installed'
 		else:
