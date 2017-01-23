@@ -262,11 +262,13 @@ def unzip_hadoop():
 	with settings (warn_only=True), cd('/usr/local/hadoop'):
 		sudo('tar xzf hadoop-2.7.3.tar.gz', pty=True)
 		sudo('mv hadoop-2.7.3 hadoop', pty=True)
-@parallel
-@roles('slavenodes')
-def copy_hadoop_files():
-	with settings (warn_only=True):
-		put('/usr/local/hadoop/hadoop-2.7.3.tar.gz', '/usr/local/hadoop/hadoop-2.7.3.tar.gz', mode=0750)
+
+
+#not using right now !
+#
+#def copy_hadoop_files():
+#	with settings (warn_only=True):
+#		put('/usr/local/hadoop/hadoop-2.7.3.tar.gz', '/usr/local/hadoop/hadoop-2.7.3.tar.gz', mode=0750)
 
 
 #yum and apt upgrades for all servers		
@@ -294,4 +296,19 @@ def deploy():
     execute(update_bashrc)
     execute(update_hostfile)
     execute(disable_ipv6)
+    execute(download_files)
+    execute(download_test_files)
+    execute(unzip_hadoop)
+    execute(update_hadoop_config)
+    execute(create_hdfs)
+    execute(format_namenode)
+    execute(start_hadoop)
+    execute(verify_hadoop_status)
+    execute(stop_hadoop_cluster)
+    execute(pop_browser)
+    execute(load_test_files)
+    execute(verify_test_files)
+    execute(test_mapreduce)
+    execute(verify_mapreduce)
+    execute(stop_hadoop_cluster)
 
