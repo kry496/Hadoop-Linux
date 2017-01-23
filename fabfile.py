@@ -17,7 +17,7 @@
 # import all the fabric functions that we need explicitly
 from fabric.api import env, roles, sudo, execute, put, run, local, lcd, prompt, cd, parallel, settings, hide, quiet 
 from fabric.contrib.files import exists, append, contains
-import fabric.operations
+from  fabric.operations import put
 
 # import platform module to test the machine type of the terminal box.
 # Non Fabric library fabric related imports: import entire module to enable code & namespace management at scale.
@@ -208,6 +208,10 @@ def create_ssh_key():
 			sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys")
 			sudo("chmod 600 /home/hduser/.ssh/authorized_keys")
 			sudo("/etc/init.d/ssh reload")
+		else:
+			print 'ssh key already exists'
+
+
 # pull the master node's key from all the slave nodes
 
 @roles('slavenodes')
@@ -262,14 +266,14 @@ def disable_ipv6():
 			print 'IPV6 is already disable'
 #un-zip and move the hadoop files
 #@parallel
-@roles('masternode')
+@roles('all')
 def unzip_hadoop():
 	with settings (warn_only=True), cd('/usr/local/hadoop'):
 		if exists('/usr/local/hadoop/hadoop') == True:
 			print 'Already unzipped'
 		else:
-			sudo('tar xzf hadoop-2.7.3.tar.gz', pty=True)
-			sudo('mv hadoop-2.7.3 hadoop', pty=True)
+			sudo('tar xzf hadoop-2.7.3.tar.gz', pty=True, user='hduser')
+			sudo('mv hadoop-2.7.3 hadoop', pty=True, user='hduser')
 
 
 #not using right now !
@@ -279,20 +283,16 @@ def unzip_hadoop():
 #		put('/usr/local/hadoop/hadoop-2.7.3.tar.gz', '/usr/local/hadoop/hadoop-2.7.3.tar.gz', mode=0750)
 
 #push the hadoop config files with pre-saved text files from git
-
+#@parallel
+@roles('all')
 def update_hadoop_config():
-	with settings (warn_only=True), lcd('/root/hadoop_config_files'):
+	with settings (warn_only=True), lcd('/temp_hadoop/hadoop_config_files'):
 		put('hadoop-env.sh', '/usr/local/hadoop/hadoop/etc/hadoop/hadoop-env.sh')
 		put('core-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/core-site.xml')
 		put('hdfs-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/hdfs-site.xml')
-		put('mapred-site.xml', '/usr/local/hadoop/hadopp/etc/hadooop/mapred-site.xml')
+		put('mapred-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/mapred-site.xml')
 		put('yarn-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/yarn-site.xml')
-
-
-
-
-
-
+		put('slaves', '/usr/local/hadoop/hadoop/etc/hadoop/slaves')
 
 
 
