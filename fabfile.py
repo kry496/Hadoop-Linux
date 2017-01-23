@@ -32,9 +32,6 @@ import os
 
 import StringIO
 
-
-
-
 #add to bash file
 
 bashrc_updates = """
@@ -223,13 +220,10 @@ def copy_ssh_key():
 		sudo("ssh-keyscan -H master >> /home/hduser/.ssh/known_hosts")
 		sudo("/etc/init.d/ssh reload")
 		
-		
-
 
 # lets append the bashrc_updates text to the bashrc file of HDUSER
 # fabric.contrib.files.append(filename, text, use_sudo=False, partial=False, escape=True, shell=False)
 # we putting hadoop specific variable and updating the path ENV.. etc
-
 @parallel				  
 @roles('all')
 def update_bashrc():
@@ -243,8 +237,8 @@ def update_bashrc():
 		else:
 			print 'hduser doesnt exist'
 
-# update the host file on all the nodes
 
+# update the host file on all the nodes
 @parallel				  
 @roles('all')
 def update_hostfile():
@@ -253,6 +247,7 @@ def update_hostfile():
 			append('/etc/hosts', hosts_file_update, use_sudo=True)
 		else:
 			print ' the etc host file is already updated'
+
 
 # GO parallel mode and IPV6 needs to be disabled for the Hadoop Cluster to work
 @parallel
@@ -264,6 +259,8 @@ def disable_ipv6():
 			sudo('sysctl -p', pty=True)
 		else:
 			print 'IPV6 is already disable'
+
+
 #un-zip and move the hadoop files
 #@parallel
 @roles('all')
@@ -277,11 +274,9 @@ def unzip_hadoop():
 
 
 #not using right now !
-#
 #def copy_hadoop_files():
 #	with settings (warn_only=True):
 #		put('/usr/local/hadoop/hadoop-2.7.3.tar.gz', '/usr/local/hadoop/hadoop-2.7.3.tar.gz', mode=0750)
-
 #push the hadoop config files with pre-saved text files from git
 #@parallel
 @roles('all')
@@ -312,6 +307,7 @@ def format_namenode():
 		run('hadoop namenode -format')
 
 
+@roles('masternode')
 def start_hadoop():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/sbin/'):
 		sudo('./start-all.sh', user='hduser', pty=True)
@@ -322,8 +318,6 @@ def test_hadoop():
 	with settings (warn_only=True):
 		sudo('jps', user=hduser, pty=True)
 		sudo('netstat -plten | grep java', user='hduser', pty=True)
-
-
 
 
 #yum and apt upgrades for all servers		
@@ -338,27 +332,27 @@ def upgrade_servers():
         	print 'this script works only on ubuntu or centos linux distribution'
 		print 'exiting the script'
 
-
-
-
+#write code to pop the browser for given address only on masternode
 @roles('masternode')
 def pop_browser():
 #import code and pop browser
 #http://master:50070
 
+#move the three files into HDFS for word count program to check run its mapreduce
 @roles('masternode')
 def load_test_files():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
 		run('hdfs dfs -copyFromLocal /home/hduser/test /a')
 		run('hdfs dfs -ls /a')
 
-
+#run the jar file for wordcount program and place the output in /ba in hdfs
 @roles('masternode')
 def test_mapreduce():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
 	run('hadoop jar /usr/local/hadoop/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount /a /ba')
 
 
+#inspece the contents for successful verification
 @roles('masternode')
 def verify_mapreduce():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
@@ -366,13 +360,13 @@ def verify_mapreduce():
 	run('hdfs -cat /ba/part-r-00000')
 	#run the broswer load code
 
-
+#move the final output out of of HDFS into the client folder
 @roles('masternode')
 def moveout():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin')
 		run('hdfs dfs -getmerge /ba /home/hduser/test/final_output')
 
-
+#shutdown the hdfs cluster
 @roles('masternode')
 def stop_hadoop():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/sbin'):
