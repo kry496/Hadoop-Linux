@@ -255,6 +255,19 @@ def disable_ipv6():
 			sudo('sysctl -p', pty=True)
 		else:
 			print 'IPV6 is already disable'
+#un-zip and move the hadoop files
+@parallel
+@roles('all')
+def unzip_hadoop():
+	with settings (warn_only=True), cd('/usr/local/hadoop'):
+		sudo('tar xzf hadoop-2.7.3.tar.gz', pty=True)
+		sudo('mv hadoop-2.7.3 hadoop', pty=True)
+@parallel
+@roles('slavenodes')
+def copy_hadoop_files():
+	with settings (warn_only=True):
+		put('/usr/local/hadoop/hadoop-2.7.3.tar.gz', '/usr/local/hadoop/hadoop-2.7.3.tar.gz', mode=0750)
+
 
 #yum and apt upgrades for all servers		
 @parallel
