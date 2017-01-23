@@ -1,18 +1,25 @@
 
-""" Fab file created by Kry496@my.utsa.edu for Apache Hadoop Cluster deployment in Ubuntu or CentOs """
-# December 2016
-# Works on Fabric 1.13 and Ubuntu & CentOs ; support for RHEL with SE will be added 
-# MasterNode and Slave nodes, use Virtual box. On Each node: one adapter goes to internet and other internal network with static routing
-# Pre-requisites for the script to function properly install fabric as root
-# pip install fabric==1.13     is the command that you need.
-# if its a new server run the yum /apt upgrade before starting this script even the script calls it.
+""" Fab file created by prem = kry496@my.utsa.edu for Apache Hadoop Cluster deployment in Ubuntu or CentOs """
+# December 2016  # Deploy multi-node Apache Hadoop cluster with Python -Fabric Module 
+#Fabric is a ssh/fscp/ftp/bash-login-shell wrapper to run commands on local and remote hosts
+# Works with Fabric 1.13 on Ubuntu & CentOs ; support for RHEL with SE will be added 
+# Create Terminalbox(control node) to run your script
+# Hadoop related VMs - one MasterNode and Any number of Slave nodes, use Virtual box. 
+# On virtual box when u create the VMs with Regular NAT adapter and other network adapter with
+# with Virtual box host only mode, This way you get a pre interconnected
+# Pre-interconnected nodes or cluster with IP addresses automatically assigned on Virtual Adapters
+# use the Private IPs that are generated and add it to the env values in the scripts
+#Pre-requisites for the script to function ->  properly install fabric as root
+# use command -> pip install fabric==1.13     is the command that you need.
+# if its a new server(terminal-box) run the yum /apt upgrade before starting this script even the script calls it.
 
 
 # import all the fabric functions that we need explicitly
 from fabric.api import env, roles, sudo, execute, put, run, local, lcd, prompt, cd, parallel, settings, hide, quiet 
 from fabric.contrib.files import exists, append, contains
 import fabric.operations
-# import platform module to test the machine type.
+
+# import platform module to test the machine type of the terminal box.
 # Non Fabric library fabric related imports: import entire module to enable code & namespace management at scale.
 
 import platform
@@ -25,9 +32,6 @@ import os
 
 import StringIO
 
-# import exists, append, contains 
-
-from fabric.contrib.files import exists,append,contains
 
 
 
@@ -69,7 +73,7 @@ export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
 """
 
-# Update the Roledef environment variable to define the set of master and slave nodes for the hadoop configuration.
+# Update the roledefs environment variable to define the set of master and slave nodes for the hadoop configuration.
 env.roledefs = {
     'masternode': ['192.168.56.122'],
     'slavenodes': ['192.168.56.121', '192.168.56.126'],
@@ -86,7 +90,7 @@ hosts_file_update='''
 192.168.56.121 slave2
 
 '''
-#disable ipv6
+#updates to /etc/sysctl for disabling ipv6
 
 sysctl_update='''
 net.ipv6.conf.all.disable_ipv6 = 1
@@ -100,12 +104,19 @@ net.ipv6.conf.lo.disable_ipv6 = 1'''
 #   'masternode': ['default-jdk','openssh-server',],
 #   'slavenodes': ['default-jdk','openssh-server',]
 #}
-#
+# update the env user variable and sudo password
+# the sudo password variable is not taking effect
+# review and fix required
+
 env.user='hduser'
 env.sudo_password='Lab1lab2'
 
+
 # lets create a hadoop user 
-#      @parallel
+# dont use  parallel decorator here, since user creating command is interactive.
+# use roles decorator and call all the servers in the roledefs python sub dictionary class.
+# run vs sudo  -> regular user vs privelaged user execution styles
+
 @roles('all')
 def create_hduser():
 	if run('id -u hduser', warn_only=True).return_code == 1:
@@ -114,7 +125,7 @@ def create_hduser():
 		print " hduser exists"
 
 		
-# The hadoop Mapreduce test files and hadoop 2.7.3 tar files that need to be downloaded
+# The hadoop Mapreduce test files and hadoop 2.7.3 tar files that needs to be downloaded
 test_files = {
     'masternode' : ['http://www.gutenberg.org/ebooks/20417',
                     'http://www.gutenberg.org/ebooks/5000',
@@ -127,12 +138,13 @@ download_hadoop = {
 }
 
 
-#download the files with the function
+#we download the files in a folder and change permissions
+
 
 @roles('masternode')
 def download_files():
 	hadoop_dir = "/usr/local/hadoop"
-	if not exists('usr/local/hadoop', use_sudo=True):
+	if not exists('usr/local/hadoop/hadoop-2.7.3.tar.gz', use_sudo=True):
 		sudo('mkdir -p %s' %hadoop_dir, pty=True)
 		sudo('chown hduser:hadoopadmin %s' % hadoop_dir, pty=True)
 		sudo('chmod g+s %s' %hadoop_dir, pty=True)
@@ -152,11 +164,12 @@ def download_test_files():
 		with cd(test_dir):
 			for url in test_files['masternode']:
 				testfilename = "%s/%s" %(test_dir, os.path.basename(url))
+				platform.node()
 				run('wget --no-cache %s -O %s' %(url, testfilename))
 
 
 # Install JDK depending on the linux distribution
-
+# the underscore makes the function un - callable with fab command. a private function.
 def _java_distro():
 	with settings (warn_only=True):
 		if 'ubuntu' in platform.platform().lower():
@@ -168,7 +181,7 @@ def _java_distro():
 			print 'exiting the script'
 
 
-
+#parallely execute on all nodes in the cluster
 
 @parallel			
 @roles('all')	
@@ -181,6 +194,7 @@ def  java_install():
 	        	print ' java is installed'
 		else:
 			print 'unknown return_code'
+# generate the ssh key on the hadoop master
 	
 @roles('masternode')
 def create_ssh_key():
@@ -189,6 +203,7 @@ def create_ssh_key():
 		sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys")
 		sudo("chmod 600 /home/hduser/.ssh/authorized_keys")
 		sudo("/etc/init.d/ssh reload")
+# pull the master node's key from all the slave nodes
 
 @roles('slavenodes')
 def copy_ssh_key():
@@ -204,8 +219,7 @@ def copy_ssh_key():
 
 # lets append the bashrc_updates text to the bashrc file of HDUSER
 # fabric.contrib.files.append(filename, text, use_sudo=False, partial=False, escape=True, shell=False)
-# even with settings (sudo_user .... we need to specify the parameters above for the command to go through)
-
+# we putting hadoop specific variable and updating the path ENV.. etc
 
 @parallel				  
 @roles('all')
@@ -220,6 +234,8 @@ def update_bashrc():
 		else:
 			print 'hduser doesnt exist'
 
+# update the host file on all the nodes
+
 @parallel				  
 @roles('all')
 def update_hostfile():
@@ -229,6 +245,7 @@ def update_hostfile():
 		else:
 			print ' the etc host file is already updated'
 
+# GO parallel mode and IPV6 needs to be disabled for the Hadoop Cluster to work
 @parallel
 @roles('all')
 def disable_ipv6():
@@ -238,10 +255,10 @@ def disable_ipv6():
 			sudo('sysctl -p', pty=True)
 		else:
 			print 'IPV6 is already disable'
-		
 
+#yum and apt upgrades for all servers		
 @parallel
-@roles("all") # this decorater will make the the function following it  run for all servers
+@roles("all") 
 def upgrade_servers():
 	if 'ubuntu' in platform.platform().lower:
 		sudo('apt-get upgrade')
