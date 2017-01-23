@@ -139,25 +139,29 @@ download_hadoop = {
 
 
 #we download the files in a folder and change permissions
-
-
-@roles('masternode')
+# need to add a quiet setting below once functionality is tested
+@parallel
+@roles('all')
 def download_files():
 	hadoop_dir = "/usr/local/hadoop"
-	if not exists('usr/local/hadoop/hadoop-2.7.3.tar.gz', use_sudo=True):
+	if exists('/usr/local/hadoop/hadoop-2.7.3.tar.gz') == True:
+		print ' hadoop is already downloaded'
+	else:
 		sudo('mkdir -p %s' %hadoop_dir, pty=True)
 		sudo('chown hduser:hadoopadmin %s' % hadoop_dir, pty=True)
 		sudo('chmod g+s %s' %hadoop_dir, pty=True)
-	with cd(hadoop_dir):
-		for url in download_hadoop['masternode']:
-			filename = "%s/%s" %(hadoop_dir, os.path.basename(url))
-			run('wget --no-cache %s -O %s' %(url, filename))
+		with cd(hadoop_dir):
+			for url in download_hadoop['masternode']:
+				filename = "%s/%s" %(hadoop_dir, os.path.basename(url))
+				run('wget --no-cache %s -O %s' %(url, filename))
 	
 
 @roles('masternode')
 def download_test_files():
 	test_dir = '/home/hduser/test'
-	if not exists('/home/hduser/test/(*?).*', use_sudo=True):
+	if exists('/home/hduser/test/') == True:
+		print 'test folder already exists'
+	else:
 		sudo('mkdir -p %s' %test_dir, pty=True)
 		sudo('chown -R hduser:hadoopadmin %s' %test_dir, pty=True)
 		sudo('chmod g+s %s' %test_dir, pty=True)
@@ -199,10 +203,11 @@ def  java_install():
 @roles('masternode')
 def create_ssh_key():
 	with settings (warn_only=True):
-		sudo('ssh-keygen -t rsa -P"" -f /home/hduser/.ssh/id_rsa')
-		sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys")
-		sudo("chmod 600 /home/hduser/.ssh/authorized_keys")
-		sudo("/etc/init.d/ssh reload")
+		if exists('/home/hduser/.ssh/id_rsa') == False:
+			sudo('ssh-keygen -t rsa -P"" -f /home/hduser/.ssh/id_rsa')
+			sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys")
+			sudo("chmod 600 /home/hduser/.ssh/authorized_keys")
+			sudo("/etc/init.d/ssh reload")
 # pull the master node's key from all the slave nodes
 
 @roles('slavenodes')
@@ -225,7 +230,7 @@ def copy_ssh_key():
 @roles('all')
 def update_bashrc():
 	with settings (warn_only=True):
-		if exists('/home/hduser/.bashrc', use_sudo=True):
+		if exists('/home/hduser/.bashrc') == True:
 			if not contains('/home/hduser/.bashrc', "HADOOP"):
 				append('/home/hduser/.bashrc', bashrc_updates, use_sudo=True)
 				sudo('source /home/hduser/.bashrc', pty=True)
@@ -256,12 +261,15 @@ def disable_ipv6():
 		else:
 			print 'IPV6 is already disable'
 #un-zip and move the hadoop files
-@parallel
-@roles('all')
+#@parallel
+@roles('masternode')
 def unzip_hadoop():
 	with settings (warn_only=True), cd('/usr/local/hadoop'):
-		sudo('tar xzf hadoop-2.7.3.tar.gz', pty=True)
-		sudo('mv hadoop-2.7.3 hadoop', pty=True)
+		if exists('/usr/local/hadoop/hadoop') == True:
+			print 'Already unzipped'
+		else:
+			sudo('tar xzf hadoop-2.7.3.tar.gz', pty=True)
+			sudo('mv hadoop-2.7.3 hadoop', pty=True)
 
 
 #not using right now !
@@ -269,6 +277,23 @@ def unzip_hadoop():
 #def copy_hadoop_files():
 #	with settings (warn_only=True):
 #		put('/usr/local/hadoop/hadoop-2.7.3.tar.gz', '/usr/local/hadoop/hadoop-2.7.3.tar.gz', mode=0750)
+
+#push the hadoop config files with pre-saved text files from git
+
+def update_hadoop_config():
+	with settings (warn_only=True), lcd('/root/hadoop_config_files'):
+		put('hadoop-env.sh', '/usr/local/hadoop/hadoop/etc/hadoop/hadoop-env.sh')
+		put('core-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/core-site.xml')
+		put('hdfs-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/hdfs-site.xml')
+		put('mapred-site.xml', '/usr/local/hadoop/hadopp/etc/hadooop/mapred-site.xml')
+		put('yarn-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/yarn-site.xml')
+
+
+
+
+
+
+
 
 
 #yum and apt upgrades for all servers		
@@ -282,6 +307,16 @@ def upgrade_servers():
 	else:
         	print 'this script works only on ubuntu or centos linux distribution'
 		print 'exiting the script'
+
+
+@roles('masternode')
+def test_exists():
+	with settings (warn_only=True):
+		if exists('/usr/local/hadoop') == True:
+			print 'this works'
+		else:
+			print ' this is the else part'
+
 
 
 
