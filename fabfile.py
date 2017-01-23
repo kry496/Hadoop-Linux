@@ -294,6 +294,36 @@ def update_hadoop_config():
 		put('yarn-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/yarn-site.xml')
 		put('slaves', '/usr/local/hadoop/hadoop/etc/hadoop/slaves')
 
+@roles('all')
+def create_hdfs():
+	with settings (warn_only=True)
+	if exists('/app/hadoop/tmp') == False:
+		sudo('mkdir -p /app/hadoop/tmp', user='hduser', pty=True)
+		sudo('chown -R hduser:hadoopadmin /app/hadoop/tmp', pty=True)
+		sudo('chmod 750 /app/hadoop/tmp', pty=True)
+		
+	run('mkdir $HADOOP_HOME/yarn/yarn_data/hdfs/namenode')
+	run('mkdir $HADOOP_HOME/yarn/yarn_data/hdfs/datanode')
+	
+
+@roles('masternode')
+def format_namenode():
+	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin/'):
+		run('hadoop namenode -format')
+
+
+def start_hadoop():
+	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/sbin/'):
+		sudo('./start-all.sh', user='hduser', pty=True)
+		sudo('./mr-jobhistory-daemon.sh start historyserver', user='hduser', pty=True)
+
+@roles('all')
+def test_hadoop():	
+	with settings (warn_only=True):
+		sudo('jps', user=hduser, pty=True)
+		sudo('netstat -plten | grep java', user='hduser', pty=True)
+
+
 
 
 #yum and apt upgrades for all servers		
@@ -309,16 +339,44 @@ def upgrade_servers():
 		print 'exiting the script'
 
 
+
+
 @roles('masternode')
-def test_exists():
-	with settings (warn_only=True):
-		if exists('/usr/local/hadoop') == True:
-			print 'this works'
-		else:
-			print ' this is the else part'
+def pop_browser():
+#import code and pop browser
+#http://master:50070
+
+@roles('masternode')
+def load_test_files():
+	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
+		run('hdfs dfs -copyFromLocal /home/hduser/test /a')
+		run('hdfs dfs -ls /a')
 
 
+@roles('masternode')
+def test_mapreduce():
+	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
+	run('hadoop jar /usr/local/hadoop/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount /a /ba')
 
+
+@roles('masternode')
+def verify_mapreduce():
+	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
+	run('hdfs dfs -ls /ba')
+	run('hdfs -cat /ba/part-r-00000')
+	#run the broswer load code
+
+
+@roles('masternode')
+def moveout():
+	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin')
+		run('hdfs dfs -getmerge /ba /home/hduser/test/final_output')
+
+
+@roles('masternode')
+def stop_hadoop():
+	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/sbin'):
+		sudo('/.stop-all.sh', user='hduser', pty=True)
 
 # this is the main function we will be calling to get it all running
 def deploy():
@@ -338,12 +396,11 @@ def deploy():
     execute(create_hdfs)
     execute(format_namenode)
     execute(start_hadoop)
-    execute(verify_hadoop_status)
-    execute(stop_hadoop_cluster)
+    execute(test_hadoop)
     execute(pop_browser)
     execute(load_test_files)
-    execute(verify_test_files)
     execute(test_mapreduce)
     execute(verify_mapreduce)
-    execute(stop_hadoop_cluster)
+    execute(moveout)
+    execute(stop_hadoop)
 
