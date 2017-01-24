@@ -198,13 +198,13 @@ def  java_install():
 @roles('masternode')
 def create_ssh_key():
 	with settings (warn_only=True):
-		if exists('/home/hduser/.ssh/id_rsa') == False:
-			sudo('ssh-keygen -t rsa -P"" -f /home/hduser/.ssh/id_rsa', user='hduser', pty=True)
-			sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys", user=hduser, pty=True)
+		if exists('/home/hduser/.ssh/id_rsa') == True:
+			print 'ssh key already exists'
+		else:
+			sudo('ssh-keygen -t rsa -P "" -f /home/hduser/.ssh/id_rsa', user='hduser', pty=True)
+			sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys", user='hduser', pty=True)
 			sudo("chmod 600 /home/hduser/.ssh/authorized_keys", user='hduser', pty=True)
 			sudo("/etc/init.d/ssh reload")
-		else:
-			print 'ssh key already exists'
 
 
 # pull the master node's key from all the slave nodes
@@ -212,11 +212,14 @@ def create_ssh_key():
 @roles('slavenodes')
 def copy_ssh_key():
 	with settings (warn_only=True):
-		sudo('ssh-keygen -t rsa -P "" -f /home/hduser/.ssh/id_rsa', user='hduser', pty=True)
-		sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys", user='hduser', pty=True)
-		sudo("chmod 0600 /home/hduser/.ssh/authorized_keys", user='hduser', pty=True)
-		sudo("ssh-keyscan -H master >> /home/hduser/.ssh/known_hosts", user='hduser', pty=True)
-		sudo("/etc/init.d/ssh reload")
+		if exists('/home/hduser/.ssh/id_rsa') == True:
+			print 'ssh key already exists'
+		else:
+			sudo('ssh-keygen -t rsa -P "" -f /home/hduser/.ssh/id_rsa', user='hduser', pty=True)
+			sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys", user='hduser', pty=True)
+			sudo("chmod 0600 /home/hduser/.ssh/authorized_keys", user='hduser', pty=True)
+			sudo("ssh-keyscan -H master >> /home/hduser/.ssh/known_hosts", user='hduser', pty=True)
+			sudo("/etc/init.d/ssh reload")
 		
 
 # lets append the bashrc_updates text to the bashrc file of HDUSER
