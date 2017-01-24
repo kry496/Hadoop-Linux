@@ -288,7 +288,7 @@ def update_hadoop_config():
 
 @roles('all')
 def create_hdfs():
-	with settings (warn_only=True)
+	with settings (warn_only=True):
 	if exists('/app/hadoop/tmp') == False:
 		sudo('mkdir -p /app/hadoop/tmp', user='hduser', pty=True)
 		sudo('chown -R hduser:hadoopadmin /app/hadoop/tmp', pty=True)
