@@ -156,9 +156,9 @@ def download_test_files():
 	if exists('/home/hduser/test/') == True:
 		print 'test folder already exists'
 	else:
-		sudo('mkdir -p %s' %test_dir, pty=True)
-		sudo('chown -R hduser:hadoopadmin %s' %test_dir, pty=True)
-		sudo('chmod g+s %s' %test_dir, pty=True)
+		sudo('mkdir -p %s' %test_dir, user='hduser', pty=True)
+		#sudo('chown -R hduser:hadoopadmin %s' %test_dir, pty=True)
+		#sudo('chmod g+s %s' %test_dir, pty=True)
 		with cd(test_dir):
 			for url in test_files['masternode']:
 				testfilename = "%s/%s" %(test_dir, os.path.basename(url))
@@ -305,8 +305,9 @@ def create_name_data_node():
 
 @roles('masternode')
 def format_namenode():
-	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin/'):
-		run('hadoop namenode -format')
+	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
+		run('pwd')
+		run('./hadoop namenode -format', pty=True)
 
 
 @roles('masternode')
@@ -318,8 +319,8 @@ def start_hadoop():
 @roles('all')
 def test_hadoop():	
 	with settings (warn_only=True):
-		sudo('jps', user=hduser, pty=True)
-		sudo('netstat -plten | grep java', user='hduser', pty=True)
+		sudo('jps', user='hduser', pty=True)
+		#sudo('netstat -plten | grep java', user='hduser', pty=True)
 
 
 #yum and apt upgrades for all servers		
@@ -345,35 +346,35 @@ def upgrade_servers():
 @roles('masternode')
 def load_test_files():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
-		run('hdfs dfs -copyFromLocal /home/hduser/test /a')
-		run('hdfs dfs -ls /a')
+		run('./hdfs dfs -copyFromLocal /home/hduser/test /a')
+		run('./hdfs dfs -ls /a')
 
 #run the jar file for wordcount program and place the output in /ba in hdfs
 @roles('masternode')
 def test_mapreduce():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
-		run('hadoop jar /usr/local/hadoop/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount /a /ba')
+		run('./hadoop jar /usr/local/hadoop/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount /a /ba')
 
 
 #inspece the contents for successful verification
 @roles('masternode')
 def verify_mapreduce():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
-		run('hdfs dfs -ls /ba')
-		run('hdfs -cat /ba/part-r-00000')
+		run('./hdfs dfs -ls /ba')
+		#run('./hdfs -cat /ba/part-r-00000')
 	#run the broswer load code
 
 #move the final output out of of HDFS into the client folder
 @roles('masternode')
 def moveout():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
-		run('hdfs dfs -getmerge /ba /home/hduser/test/final_output')
+		run('./hdfs dfs -getmerge /ba /home/hduser/test/final_output')
 
 #shutdown the hdfs cluster
 @roles('masternode')
 def stop_hadoop():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/sbin'):
-		sudo('/.stop-all.sh', user='hduser', pty=True)
+		sudo('./stop-all.sh', user='hduser', pty=True)
 
 # this is the main function we will be calling to get it all running
 def deploy():
