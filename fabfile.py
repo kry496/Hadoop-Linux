@@ -72,8 +72,8 @@ export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
 # Update the roledefs environment variable to define the set of master and slave nodes for the hadoop configuration.
 env.roledefs = {
-    'masternode': ['192.168.56.122'],
-    'slavenodes': ['192.168.56.121', '192.168.56.126'],
+    'masternode': ['192.168.56.135'],
+    'slavenodes': ['192.168.56.138', '192.168.56.145','192.168.56.142'],
 }
 
 # List Comprehension to define all sevever in a single list to apply certain settings to all servers 
@@ -82,10 +82,10 @@ env.roledefs['all'] = [x for y in env.roledefs.values() for x in y]
 #add to /etc/hosts file
 
 hosts_file_update='''
-192.168.56.122 master
-192.168.56.126 slave1
-192.168.56.121 slave2
-
+192.168.56.135 master
+192.168.56.128 slave1
+192.168.56.142 slave2
+192.168.56.145 slave3
 '''
 #updates to /etc/sysctl for disabling ipv6
 
@@ -114,7 +114,7 @@ env.user='hduser'
 @roles('all')
 def create_hduser():
 	if run('id -u hduser', warn_only=True).return_code == 1:
-		sudo('addgroup hadoopadmin && adduser --ingroup hadoopadmin hduser && usermod -aG sudo hduser', pty=True)
+		sudo('addgroup hadoopadmin && adduser --ingroup hadoopadmin hduser && usermod -aG sudo hduser', user='root', pty=True)
 	else:
 		print " hduser exists"
 
@@ -324,12 +324,12 @@ def test_hadoop():
 
 
 #yum and apt upgrades for all servers		
-@parallel
+
 @roles("all") 
 def upgrade_servers():
-	if 'ubuntu' in platform.platform().lower:
-		sudo('apt-get upgrade')
-	elif 'centos' in platform.platform().lower:
+	if 'ubuntu' in platform.platform().lower():
+		sudo('apt-get -y upgrade', pty=True)
+	elif 'centos' in platform.platform().lower():
 		sudo("yum -y upgrade",pty=True)
 	else:
         	print 'this script works only on ubuntu or centos linux distribution'
@@ -382,8 +382,8 @@ def stop_hadoop():
 def deploy():
     # note here that the execute function has the names of the functions we
     # are calling, but we are excluding the parenthesis()
-    execute(upgrade_servers)
     execute(create_hduser)
+    execute(upgrade_servers)
     execute(java_install)
     execute(copy_ssh_key)	
     execute(update_bashrc)
