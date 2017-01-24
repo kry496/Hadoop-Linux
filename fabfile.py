@@ -270,7 +270,7 @@ def unzip_hadoop():
 			sudo('mv hadoop-2.7.3 hadoop', pty=True, user='hduser')
 
 
-#not using right now !
+#not using right now 
 #def copy_hadoop_files():
 #	with settings (warn_only=True):
 #		put('/usr/local/hadoop/hadoop-2.7.3.tar.gz', '/usr/local/hadoop/hadoop-2.7.3.tar.gz', mode=0750)
@@ -289,13 +289,13 @@ def update_hadoop_config():
 @roles('all')
 def create_hdfs():
 	with settings (warn_only=True):
-	if exists('/app/hadoop/tmp') == False:
-		sudo('mkdir -p /app/hadoop/tmp', user='hduser', pty=True)
-		sudo('chown -R hduser:hadoopadmin /app/hadoop/tmp', pty=True)
-		sudo('chmod 750 /app/hadoop/tmp', pty=True)
+		if exists('/app/hadoop/tmp') == False:
+			sudo('mkdir -p /app/hadoop/tmp', user='hduser', pty=True)
+			sudo('chown -R hduser:hadoopadmin /app/hadoop/tmp', pty=True)
+			sudo('chmod 750 /app/hadoop/tmp', pty=True)
 		
-	run('mkdir $HADOOP_HOME/yarn/yarn_data/hdfs/namenode')
-	run('mkdir $HADOOP_HOME/yarn/yarn_data/hdfs/datanode')
+		run('mkdir $HADOOP_HOME/yarn/yarn_data/hdfs/namenode')
+		run('mkdir $HADOOP_HOME/yarn/yarn_data/hdfs/datanode')
 	
 
 @roles('masternode')
