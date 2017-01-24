@@ -375,6 +375,8 @@ def moveout():
 def stop_hadoop():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/sbin'):
 		sudo('./stop-all.sh', user='hduser', pty=True)
+		sudo('./mr-jobhistory-daemon.sh stop historyserver', user='hduser', pty=True)
+
 
 # this is the main function we will be calling to get it all running
 def deploy():
