@@ -198,9 +198,9 @@ def  java_install():
 def create_ssh_key():
 	with settings (warn_only=True):
 		if exists('/home/hduser/.ssh/id_rsa') == False:
-			sudo('ssh-keygen -t rsa -P"" -f /home/hduser/.ssh/id_rsa')
-			sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys")
-			sudo("chmod 600 /home/hduser/.ssh/authorized_keys")
+			sudo('ssh-keygen -t rsa -P"" -f /home/hduser/.ssh/id_rsa', user='hduser', pty=True)
+			sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys", user=hduser, pty=True)
+			sudo("chmod 600 /home/hduser/.ssh/authorized_keys", user='hduser', pty=True)
 			sudo("/etc/init.d/ssh reload")
 		else:
 			print 'ssh key already exists'
@@ -211,10 +211,10 @@ def create_ssh_key():
 @roles('slavenodes')
 def copy_ssh_key():
 	with settings (warn_only=True):
-		sudo('ssh-keygen -t rsa -P "" -f /home/hduser/.ssh/id_rsa')
-		sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys")
-		sudo("chmod 0600 /home/hduser/.ssh/authorized_keys")
-		sudo("ssh-keyscan -H master >> /home/hduser/.ssh/known_hosts")
+		sudo('ssh-keygen -t rsa -P "" -f /home/hduser/.ssh/id_rsa', user='hduser', pty=True)
+		sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys", user='hduser', pty=True)
+		sudo("chmod 0600 /home/hduser/.ssh/authorized_keys", user='hduser', pty=True)
+		sudo("ssh-keyscan -H master >> /home/hduser/.ssh/known_hosts", user='hduser', pty=True)
 		sudo("/etc/init.d/ssh reload")
 		
 
@@ -284,7 +284,7 @@ def update_hadoop_config():
 		put('hdfs-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/hdfs-site.xml')
 		put('mapred-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/mapred-site.xml')
 		put('yarn-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/yarn-site.xml')
-		put('slaves', '/usr/local/hadoop/hadoop/etc/hadoop/slaves')
+		put('slaves', '/usr/local/hadoop/hadoop/etc/hadoo`p/slaves')
 
 @roles('all')
 def create_hdfs():
@@ -293,16 +293,14 @@ def create_hdfs():
 			print ' /app/hadoop/tmp exists'
 		else:
 			print 'this is for temp hdfs data'
-			sudo('mkdir -p /app/hadoop/tmp', pty=True)
-			sudo('chown -R hduser:hadoopadmin /app/hadoop/tmp', pty=True)
+			sudo('mkdir -p /app/hadoop/tmp', user='hduser', pty=True)
 			sudo('chmod 750 /app/hadoop/tmp', pty=True)
 		
 @roles('masternode')
 def create_name_data_node():
 	with settings (warn_only=True):
-		run('echo $HADOOP_HOME')
-		run('mkdir $HADOOP_HOME/yarn/yarn_data/hdfs/namenode')
-		run('mkdir $HADOOP_HOME/yarn/yarn_data/hdfs/datanode')
+		sudo("mkdir -p /usr/local/hadoop/hadoop/yarn/yarn_data/hdfs/namenode", user='hduser', pty=True)
+		sudo("mkdir -p /usr/local/hadoop/hadoop/yarn/yarn_data/hdfs/datanode", user='hduser', pty=True)
 	
 
 @roles('masternode')
