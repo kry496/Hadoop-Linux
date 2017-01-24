@@ -289,11 +289,18 @@ def update_hadoop_config():
 @roles('all')
 def create_hdfs():
 	with settings (warn_only=True):
-		if exists('/app/hadoop/tmp') == False:
-			sudo('mkdir -p /app/hadoop/tmp', user='hduser', pty=True)
+		if exists('/app/hadoop/tmp') == True:
+			print ' /app/hadoop/tmp exists'
+		else:
+			print 'this is for temp hdfs data'
+			sudo('mkdir -p /app/hadoop/tmp', pty=True)
 			sudo('chown -R hduser:hadoopadmin /app/hadoop/tmp', pty=True)
 			sudo('chmod 750 /app/hadoop/tmp', pty=True)
 		
+@roles('masternode')
+def create_name_data_node():
+	with settings (warn_only=True):
+		run('echo $HADOOP_HOME')
 		run('mkdir $HADOOP_HOME/yarn/yarn_data/hdfs/namenode')
 		run('mkdir $HADOOP_HOME/yarn/yarn_data/hdfs/datanode')
 	
