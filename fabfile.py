@@ -1,38 +1,38 @@
 
 """ Fab file created by prem = kry496@my.utsa.edu for Apache Hadoop Cluster deployment in Ubuntu or CentOs """
-# December 2016  # Deploy multi-node Apache Hadoop cluster with Python -Fabric Module 
+# project start date: 20 December 2016 
+# Deploy multi-node Apache Hadoop cluster with Fabric Library and Python
 #Fabric is a ssh/fscp/ftp/bash-login-shell wrapper to run commands on local and remote hosts
-# Works with Fabric 1.13 on Ubuntu & CentOs ; support for RHEL with SE will be added 
-# Create Terminalbox(control node) to run your script
-# Hadoop related VMs - one MasterNode and Any number of Slave nodes, use Virtual box. 
-# On virtual box when u create the VMs with Regular NAT adapter and other network adapter with
-# with Virtual box host only mode, This way you get a pre interconnected
-# Pre-interconnected nodes or cluster with IP addresses automatically assigned on Virtual Adapters
+# Project was built using Fabric 1.13 Package - Stable version as of Dec 2016
+#Tested on Ubuntu & CentOs ; support for RHEL with SE will be added in few months
+# Create Terminalbox( install fabric here) to run your script
+#all vms should be of same distribution
+# Hadoop related VMs - one MasterNode and ANY number of Slave nodes, use Virtual box. 
+# On virtual box -create the VMs with one Regular NAT adapter to use ur host os's Internet
+# and create one other network adapter with Virtual box host only mode
+#This way you get a pre interconnected Set of VMS
+# Pre-interconnected nodes or cluster with IP addresses on virtual adapter which we use.
 # use the Private IPs that are generated and add it to the env values in the scripts
 #Pre-requisites for the script to function ->  properly install fabric as root
 # use command -> pip install fabric==1.13     is the command that you need.
 # if its a new server(terminal-box) run the yum /apt upgrade before starting this script even the script calls it.
 
 
-# import all the fabric functions that we need explicitly
+# import all the fabric functions that we are going to use, a standard list use fabfile.org docs if you need additional funcitons:
+
 from fabric.api import env, roles, sudo, execute, put, run, local, lcd, prompt, cd, parallel, settings, hide, quiet 
 from fabric.contrib.files import exists, append, contains
 from  fabric.operations import put
 
 # import platform module to test the machine type of the terminal box.
-# Non Fabric library fabric related imports: import entire module to enable code & namespace management at scale.
-
+# Non Fabric library fabric related imports: import entire module to enable code & namespace management at scale. so you know when direct function is called, if it is fabric's function call
 import platform
 
 # import the os module to get file basenames
-
 import os
 
-# import String for appeding string data to files
 
-import StringIO
-
-#add to bash file
+#add to bash file on all hadoop nodes
 
 bashrc_updates = """
 #add to bash file 
@@ -101,12 +101,9 @@ net.ipv6.conf.lo.disable_ipv6 = 1'''
 #   'masternode': ['default-jdk','openssh-server',],
 #   'slavenodes': ['default-jdk','openssh-server',]
 #}
-# update the env user variable and sudo password
-# the sudo password variable is not taking effect
-# review and fix required
+# update the env user variable
 
 env.user='hduser'
-env.sudo_password='Lab1lab2'
 
 
 # lets create a hadoop user 
@@ -229,7 +226,7 @@ def copy_ssh_key():
 def update_bashrc():
 	with settings (warn_only=True):
 		if exists('/home/hduser/.bashrc') == True:
-			if not contains('/home/hduser/.bashrc', "HADOOP"):
+			if contains('/home/hduser/.bashrc', "HADOOP") == False:
 				append('/home/hduser/.bashrc', bashrc_updates, use_sudo=True)
 				sudo('source /home/hduser/.bashrc', pty=True)
 			else:
@@ -243,7 +240,7 @@ def update_bashrc():
 @roles('all')
 def update_hostfile():
 	with settings (warn_only=True):
-		if not contains('/etc/hosts', 'master'):
+		if contains('/etc/hosts', 'master') == False:
 			append('/etc/hosts', hosts_file_update, use_sudo=True)
 		else:
 			print ' the etc host file is already updated'
@@ -254,7 +251,7 @@ def update_hostfile():
 @roles('all')
 def disable_ipv6():
 	with settings (warn_only=True):
-		if not contains('/proc/sys/net/ipv6/conf/all/disable_ipv6', '1'):
+		if contains('/proc/sys/net/ipv6/conf/all/disable_ipv6', '1') == False:
 			append('/etc/sysctl.conf', sysctl_update, use_sudo=True)
 			sudo('sysctl -p', pty=True)
 		else:
