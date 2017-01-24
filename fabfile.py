@@ -113,10 +113,11 @@ env.user='hduser'
 
 @roles('all')
 def create_hduser():
-	if run('id -u hduser', warn_only=True).return_code == 1:
-		sudo('addgroup hadoopadmin && adduser --ingroup hadoopadmin hduser && usermod -aG sudo hduser', user='root', pty=True)
-	else:
-		print " hduser exists"
+	with settings (warn_only=True):
+		if run('id -u hduser').return_code == 1:
+			sudo('addgroup hadoopadmin && adduser --ingroup hadoopadmin hduser && usermod -aG sudo hduser', pty=True)
+		else:
+			print " hduser exists"
 
 		
 # The hadoop Mapreduce test files and hadoop 2.7.3 tar files that needs to be downloaded
@@ -284,7 +285,7 @@ def update_hadoop_config():
 		put('hdfs-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/hdfs-site.xml')
 		put('mapred-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/mapred-site.xml')
 		put('yarn-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/yarn-site.xml')
-		put('slaves', '/usr/local/hadoop/hadoop/etc/hadoo`p/slaves')
+		put('slaves', '/usr/local/hadoop/hadoop/etc/hadoop/slaves')
 
 @roles('all')
 def create_hdfs():
@@ -378,12 +379,19 @@ def stop_hadoop():
 		sudo('./mr-jobhistory-daemon.sh stop historyserver', user='hduser', pty=True)
 
 
+@roles('masternode')
+def manual_ssh():
+	with settings (warn_only=True):
+		for x in env.roledefs['slavenodes']:
+ 			sudo(' ssh hduser@%s' %(x), user='hduser', pty=True)
+
+
 # this is the main function we will be calling to get it all running
 def deploy():
     # note here that the execute function has the names of the functions we
     # are calling, but we are excluding the parenthesis()
     execute(create_hduser)
-    execute(upgrade_servers)
+    #execute(upgrade_servers)
     execute(java_install)
     execute(copy_ssh_key)	
     execute(update_bashrc)
@@ -397,7 +405,7 @@ def deploy():
     execute(format_namenode)
     execute(start_hadoop)
     execute(test_hadoop)
-    execute(pop_browser)
+    #execute(pop_browser)
     execute(load_test_files)
     execute(test_mapreduce)
     execute(verify_mapreduce)
