@@ -330,12 +330,13 @@ def upgrade_servers():
 		print 'exiting the script'
 
 #write code to pop the browser for given address only on masternode
-@roles('masternode')
-def pop_browser():
+#@roles('masternode')
+#def pop_browser():
 #import code and pop browser
 #http://master:50070
 
 #move the three files into HDFS for word count program to check run its mapreduce
+
 @roles('masternode')
 def load_test_files():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
@@ -346,21 +347,21 @@ def load_test_files():
 @roles('masternode')
 def test_mapreduce():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
-	run('hadoop jar /usr/local/hadoop/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount /a /ba')
+		run('hadoop jar /usr/local/hadoop/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount /a /ba')
 
 
 #inspece the contents for successful verification
 @roles('masternode')
 def verify_mapreduce():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
-	run('hdfs dfs -ls /ba')
-	run('hdfs -cat /ba/part-r-00000')
+		run('hdfs dfs -ls /ba')
+		run('hdfs -cat /ba/part-r-00000')
 	#run the broswer load code
 
 #move the final output out of of HDFS into the client folder
 @roles('masternode')
 def moveout():
-	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin')
+	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
 		run('hdfs dfs -getmerge /ba /home/hduser/test/final_output')
 
 #shutdown the hdfs cluster
