@@ -72,8 +72,8 @@ export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
 # Update the roledefs environment variable to define the set of master and slave nodes for the hadoop configuration.
 env.roledefs = {
-    'masternode': ['192.168.56.176'],
-    'slavenodes': ['192.168.56.177', '192.168.56.178','192.168.56.179'],
+    'masternode': ['192.168.56.184'],
+    'slavenodes': ['192.168.56.185', '192.168.56.186','192.168.56.187'],
 }
 
 # List Comprehension to define all sevever in a single list to apply certain settings to all servers 
@@ -82,10 +82,10 @@ env.roledefs['all'] = [x for y in env.roledefs.values() for x in y]
 #add to /etc/hosts file
 
 hosts_file_update='''
-192.168.56.176 master
-192.168.56.177 slave1
-192.168.56.178 slave2
-192.168.56.179 slave3
+192.168.56.184 master
+192.168.56.185 slave1
+192.168.56.186 slave2
+192.168.56.187 slave3
 '''
 #updates to /etc/sysctl for disabling ipv6
 
@@ -298,7 +298,7 @@ def create_hdfs():
 			print ' /app/hadoop/tmp exists'
 		else:
 			sudo('mkdir -p /app/hadoop/tmp', pty=True)
-			sudo('chown -R hduser:hadoopadmin', pty=True)
+			sudo('chown -R hduser:hadoopadmin /app/hadoop/tmp', pty=True)
 			sudo('chmod 750 /app/hadoop/tmp', pty=True)
 		
 
@@ -359,14 +359,14 @@ def load_test_files():
 @roles('masternode')
 def test_mapreduce():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
-		run('./hadoop jar /usr/local/hadoop/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount /a /ba')
+		run('./hadoop jar /usr/local/hadoop/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar wordcount /a /y')
 
 
 #inspece the contents for successful verification
 @roles('masternode')
 def verify_mapreduce():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
-		run('./hdfs dfs -ls /ba')
+		run('./hdfs dfs -ls /y')
 		#run('./hdfs -cat /ba/part-r-00000')
 	#run the broswer load code
 
@@ -374,7 +374,7 @@ def verify_mapreduce():
 @roles('masternode')
 def moveout():
 	with settings (warn_only=True), cd('/usr/local/hadoop/hadoop/bin'):
-		run('./hdfs dfs -getmerge /ba /home/hduser/test/final_output')
+		run('./hdfs dfs -getmerge /y /home/hduser/test/final_output')
 
 #shutdown the hdfs cluster
 @roles('masternode')
@@ -390,6 +390,18 @@ def manual_ssh():
 		for x in env.roledefs['slavenodes']:
  			sudo(' ssh hduser@%s' %(x), user='hduser', pty=True)
 
+
+@roles('all')
+def turnoff_firewall():
+	with settings (warn_only=True):
+		sudo('ufw disable', pty=True)
+
+
+@roles('all')
+def reboot_vms():
+	with settings (warn_only=True), quiet():
+		sudo('reboot', pty=True)
+ 
 
 # this is the main function we will be calling to get it all running
 def deploy():
