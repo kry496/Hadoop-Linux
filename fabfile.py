@@ -72,8 +72,8 @@ export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
 # Update the roledefs environment variable to define the set of master and slave nodes for the hadoop configuration.
 env.roledefs = {
-    'masternode': ['192.168.56.135'],
-    'slavenodes': ['192.168.56.138', '192.168.56.145','192.168.56.142'],
+    'masternode': ['192.168.56.176'],
+    'slavenodes': ['192.168.56.177', '192.168.56.178','192.168.56.179'],
 }
 
 # List Comprehension to define all sevever in a single list to apply certain settings to all servers 
@@ -82,10 +82,10 @@ env.roledefs['all'] = [x for y in env.roledefs.values() for x in y]
 #add to /etc/hosts file
 
 hosts_file_update='''
-192.168.56.135 master
-192.168.56.128 slave1
-192.168.56.142 slave2
-192.168.56.145 slave3
+192.168.56.176 master
+192.168.56.177 slave1
+192.168.56.178 slave2
+192.168.56.179 slave3
 '''
 #updates to /etc/sysctl for disabling ipv6
 
@@ -115,16 +115,16 @@ env.user='hduser'
 def create_hduser():
 	with settings (warn_only=True):
 		if run('id -u hduser').return_code == 1:
-			sudo('addgroup hadoopadmin && adduser --ingroup hadoopadmin hduser && usermod -aG sudo hduser', pty=True)
+			sudo('addgroup hadoopadmin && adduser --ingroup hadoopadmin hduser && usermod -aG sudo hduser', user='root', pty=True)
 		else:
 			print " hduser exists"
 
 		
 # The hadoop Mapreduce test files and hadoop 2.7.3 tar files that needs to be downloaded
 test_files = {
-    'masternode' : ['http://www.gutenberg.org/ebooks/20417',
-                    'http://www.gutenberg.org/ebooks/5000',
-					'http://www.gutenberg.org/ebooks/4300',
+    'masternode' : ['http://www.gutenberg.org/cache/epub/2041/pg2041.txt',
+                    'http://www.gutenberg.org/files/5000/5000-8.txt',
+					'http://www.gutenberg.org/files/4300/4300-0.txt',
 					]
 					}
 
@@ -195,7 +195,7 @@ def  java_install():
 			print 'unknown return_code'
 # generate the ssh key on the hadoop master
 	
-@roles('masternode')
+@roles('all')
 def create_ssh_key():
 	with settings (warn_only=True):
 		if exists('/home/hduser/.ssh/id_rsa') == True:
@@ -209,17 +209,17 @@ def create_ssh_key():
 
 # pull the master node's key from all the slave nodes
 
-@roles('slavenodes')
+@roles('masternode')
 def copy_ssh_key():
 	with settings (warn_only=True):
-		if exists('/home/hduser/.ssh/id_rsa') == True:
-			print 'ssh key already exists'
-		else:
-			sudo('ssh-keygen -t rsa -P "" -f /home/hduser/.ssh/id_rsa', user='hduser', pty=True)
-			sudo("cat /home/hduser/.ssh/id_rsa.pub >> /home/hduser/.ssh/authorized_keys", user='hduser', pty=True)
-			sudo("chmod 0600 /home/hduser/.ssh/authorized_keys", user='hduser', pty=True)
-			sudo("ssh-keyscan -H master >> /home/hduser/.ssh/known_hosts", user='hduser', pty=True)
-			sudo("/etc/init.d/ssh reload")
+		if exists('/home/hduser/.ssh/id_rsa.pub') == True:
+			slaves = raw_input('enter number of slaves')
+			sl = int(slaves)+1
+			for x in range(1,sl):
+				run('ssh-copy-id -i ~/.ssh/id_rsa.pub slave%s' %(x))
+
+
+				
 		
 
 # lets append the bashrc_updates text to the bashrc file of HDUSER
@@ -240,11 +240,11 @@ def update_bashrc():
 
 
 # update the host file on all the nodes
-@parallel				  
 @roles('all')
 def update_hostfile():
 	with settings (warn_only=True):
 		if contains('/etc/hosts', 'master') == False:
+
 			append('/etc/hosts', hosts_file_update, use_sudo=True)
 		else:
 			print ' the etc host file is already updated'
@@ -290,16 +290,18 @@ def update_hadoop_config():
 		put('yarn-site.xml', '/usr/local/hadoop/hadoop/etc/hadoop/yarn-site.xml')
 		put('slaves', '/usr/local/hadoop/hadoop/etc/hadoop/slaves')
 
+
 @roles('all')
 def create_hdfs():
 	with settings (warn_only=True):
 		if exists('/app/hadoop/tmp') == True:
 			print ' /app/hadoop/tmp exists'
 		else:
-			print 'this is for temp hdfs data'
-			sudo('mkdir -p /app/hadoop/tmp', user='hduser', pty=True)
+			sudo('mkdir -p /app/hadoop/tmp', pty=True)
+			sudo('chown -R hduser:hadoopadmin', pty=True)
 			sudo('chmod 750 /app/hadoop/tmp', pty=True)
 		
+
 @roles('masternode')
 def create_name_data_node():
 	with settings (warn_only=True):
@@ -393,12 +395,13 @@ def manual_ssh():
 def deploy():
     # note here that the execute function has the names of the functions we
     # are calling, but we are excluding the parenthesis()
-    execute(create_hduser)
+    #execute(create_hduser)
+    execute(update_hostfile)
     #execute(upgrade_servers)
     execute(java_install)
+    execute(create_ssh_key)
     execute(copy_ssh_key)	
     execute(update_bashrc)
-    execute(update_hostfile)
     execute(disable_ipv6)
     execute(download_files)
     execute(download_test_files)
