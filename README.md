@@ -7,6 +7,7 @@ On-GOing-Project:HADOOP+Linux+ Python+Fabric+APACHE+HADOOP-2.7.3+Cluster
 # these files will be copied over the nodes by the script
 #Set up VMs and fabric instructed on the fab file.
 #remeber to set the host names like -> master, slave1, slave2 on the vms
+# update the master and slave names in the slaves file of the hadoop config
 #rememeber to set the ips address on the script( in roledefs and add to host file variable
 # remember to set up openssh-server on the vms
 # remember to set permitlogin as yes and strictmode to no in the sshd config file in the etc folder
