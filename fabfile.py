@@ -1,10 +1,9 @@
 
 """ Fab file created by prem = kry496@my.utsa.edu for Apache Hadoop Cluster deployment in Ubuntu or CentOs """
-# project start date: 20 December 2016 
 # Deploy multi-node Apache Hadoop cluster with Fabric Library and Python
 #Fabric is a ssh/fscp/ftp/bash-login-shell wrapper to run commands on local and remote hosts
 # Project was built using Fabric 1.13 Package - Stable version as of Dec 2016
-#Tested on Ubuntu & CentOs ; support for RHEL with SE will be added in few months
+#Tested on Ubuntu  ; support for CentOS/RHEL with SE will be added in few months
 # Create Terminalbox( install fabric here) to run your script
 #all vms should be of same distribution
 # Hadoop related VMs - one MasterNode and ANY number of Slave nodes, use Virtual box. 
