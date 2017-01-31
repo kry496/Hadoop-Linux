@@ -1,16 +1,18 @@
 # Hadoop-Linux
-On-GOing-Project:HADOOP+Linux+ Python+Fabric+APACHE+HADOOP-2.7.3+Cluster
+On-GOing-ProjectPython Automation Framework with Fabric for APACHE+HADOOP-2.7.3+Cluster deployement
 """ Fab file created by prem = kry496@my.utsa.edu for Apache Hadoop Cluster deployment in Ubuntu or CentOs """
 # setup the Python - fabric automation framework
-# there are some intial instructions in the fab file as well, read them first.
+# if you never used the fabric library
+# there are some intial instructions in the fab file as well that some pre-requisites.
+#FOr advanced users: with understanding of hadoop and fabric:
 # ready made hadoop_config_files needs to stored in the terminal-box as per script
-# these files will be copied over the nodes by the script
-#Set up VMs and fabric instructed on the fab file.
+# these files will be copied over to the nodes by the script
+#Set up VMs and install fabric 1.13 latest version
 #remeber to set the host names like -> master, slave1, slave2 on the vms
-# update the master and slave names in the slaves file of the hadoop config
-#rememeber to set the ips address on the script( in roledefs and add to host file variable
-# remember to set up openssh-server on the vms
-# remember to set permitlogin as yes and strictmode to no in the sshd config file in the etc folder
+# update the master and slave names in the slaves file of the hadoop config folder
+#rememeber to edit the ips address on the script( in roledefs and add to host file variable
+# set up openssh-server on the vms, 
+# set permitlogin as yes and strictmode to no in the sshd config file in the etc folder
 # For Intial user creation, comment out the env.user variable in script and run fab create_hduser
 # Enter root password of the VMs
 # Once the Users are created ( u will need the credentials to run the script as hduser)
