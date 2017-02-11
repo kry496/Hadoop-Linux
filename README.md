@@ -3,6 +3,13 @@
 Python Automation Framework with Fabric for APACHE+HADOOP-2.7.3+Cluster deployement.
 """ Fab file created by prem = kry496@my.utsa.edu for Apache Hadoop Cluster deployment in Ubuntu or CentOs """
 
+# Before we go forward - overview of the VMS you will need 
+ 	- A seperate controller VM to install fabric - python module and and host the files found on my github. 
+	- Hadoop runs a master and multiple slave node - in the sample code i use three slave nodes in the cluster.
+	- 4 GB ram on the terminal box(controller) and 4GB ram for the Hadoop master node and 1GB each on the slaves.
+	- I used Oracle Virtual Box.
+	- 16 GB ram in total, atleast.
+	
 # Version of the fabfile.py found on github is the stable version of the code as of Jan 2017.
 	- Multiple updates will be rolled into a single update by March 2017.
 	- Vagrant file pending, Security updates pending
@@ -16,13 +23,14 @@ Python Automation Framework with Fabric for APACHE+HADOOP-2.7.3+Cluster deployem
 	All vms should be of same distribution, Currently it works on ubuntu\n
 	Hadoop related VMs - one MasterNode and ANY number of Slave nodes, use Virtual box. 
 	On virtual box -create the VMs with one Regular NAT adapter to use ur host os's Internet
-	and create one other network adapter with Virtual box host only mode
+	And create one other network adapter with Virtual box host only mode
+	I.3 - > Each VM has one NAT adapter (internet bound) and Virtual box host only mode adapter ( to talk to each other) 
 	This way you get a pre interconnected Set of VMS, which can talk to each other ; No need for DNS ; No need to set static IPs
 	Pre-inteconnected nodes or cluster with IP addresses on virtual adapter which we use.
-	use the Private IPs that are generated and add it to the env values in the scripts
+	Use the Private IPs that are generated and add it to the env values in the scripts
 	Pre-requisites for the script to function ->  properly install fabric as root
-	use command -> pip install fabric==1.13     is the command that you need.
-	if its a new server(terminal-box) run the yum /apt upgrade before starting this script even the script calls it.
+	Use command -> pip install fabric==1.13    
+	If its a new server(terminal-box) run the yum /apt upgrade before starting this script even the script calls it.
 
 
 
