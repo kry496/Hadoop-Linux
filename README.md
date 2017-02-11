@@ -1,4 +1,4 @@
-# Hadoop-Linux
+# Hadoop-Linux-Python-FABRIC
 On-GOing-ProjectPython Automation Framework with Fabric for APACHE+HADOOP-2.7.3+Cluster deployement
 """ Fab file created by prem = kry496@my.utsa.edu for Apache Hadoop Cluster deployment in Ubuntu or CentOs """
 
