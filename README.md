@@ -12,12 +12,12 @@ Python Automation Framework with Fabric for APACHE+HADOOP-2.7.3+Cluster deployem
 	Project was built using Fabric 1.13 Package - Stable version as of Dec 2016
 	Tested on Ubuntu  ; support for CentOS/RHEL with SE will be added in few months 
 	Create Terminalbox( install fabric here) to run your script											
-#some Rules:
+#some Rules & Super Key Info :
 	All vms should be of same distribution, Currently it works on ubuntu\n
 	Hadoop related VMs - one MasterNode and ANY number of Slave nodes, use Virtual box. 
 	On virtual box -create the VMs with one Regular NAT adapter to use ur host os's Internet
 	and create one other network adapter with Virtual box host only mode
-	This way you get a pre interconnected Set of VMS
+	This way you get a pre interconnected Set of VMS, which can talk to each other ; No need for DNS ; No need to set static IPs
 	Pre-inteconnected nodes or cluster with IP addresses on virtual adapter which we use.
 	use the Private IPs that are generated and add it to the env values in the scripts
 	Pre-requisites for the script to function ->  properly install fabric as root
@@ -34,14 +34,15 @@ Tests complete on Ubuntu Nodes
 		As the script runs as HDUSER, vagrant for the VMs is the best solution 
 
 #---->>  setup the Python - fabric automation framework
-	if you never used the fabric library, read up a little.
-	For advanced users: with understanding of hadoop and fabric:
-	Ready made hadoop_config_files needs to stored in the terminal-box(where fabric is installed)  as per script
-	these files will be copied over to the hadoop nodes by the script
+	if you never used the fabric library, read up a little :)
+	For advanced users: with understanding of Hadoop and fabric:
+	Ready made Hadoop_config_files ( from my github) needs to stored in the terminal-box(where fabric is installed)  
+	You can locate this function, if you are not sure where it is stored
+	these files will be copied over to the Hadoop Master & Slave nodes by the script
 	Until the VagrantFile is added
-	Set up VMs and install fabric 1.13 latest version
-	Set the host names like -> master, slave1, slave2 on the vms
-	Update the master and slave names in the slaves file of the hadoop config folder
+	Set up VMs and install fabric 1.13 latest version ( Only on the terminal box) which is outside the Hadoop cluster
+	Set the host names like -> master, slave1, slave2 on the vms that belong to the Hadoop cluster
+	Update the master and slave names in the slaves file of the hadoop config folder ( that you downloaded from my git)(
 	Edit the ips address on the script( in roledefs and add to host file variable
 	Set up openssh-server on the vms, 
 	Sset permitlogin as yes and strictmode to no in the sshd config file in the etc folder
