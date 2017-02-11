@@ -1,12 +1,13 @@
 # Hadoop-Linux-Python-FABRIC
-On-GOing-ProjectPython Automation Framework with Fabric for APACHE+HADOOP-2.7.3+Cluster deployement
+On-GOing-Project   
+Python Automation Framework with Fabric for APACHE+HADOOP-2.7.3+Cluster deployement.
 """ Fab file created by prem = kry496@my.utsa.edu for Apache Hadoop Cluster deployment in Ubuntu or CentOs """
 
 #Deploy multi-node Apache Hadoop cluster with Fabric Library and Python
-Fabric is a ssh/fscp/ftp/bash-login-shell wrapper to run commands on local and remote hosts
-Project was built using Fabric 1.13 Package - Stable version as of Dec 2016
-Tested on Ubuntu  ; support for CentOS/RHEL with SE will be added in few months
-Create Terminalbox( install fabric here) to run your script
+Fabric is a ssh/fscp/ftp/bash-login-shell wrapper to run commands on local and remote hosts.                                             
+Project was built using Fabric 1.13 Package - Stable version as of Dec 2016								 
+Tested on Ubuntu  ; support for CentOS/RHEL with SE will be added in few months								 
+Create Terminalbox( install fabric here) to run your script											
 
 #some Rules:
 All vms should be of same distribution, Currently it works on ubuntu\n
