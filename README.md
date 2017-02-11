@@ -1,18 +1,18 @@
 # Hadoop-Linux-Python-FABRIC
-On-GOing-Project   
+# ON-GOING-PROJECT    
 Python Automation Framework with Fabric for APACHE+HADOOP-2.7.3+Cluster deployement.
 """ Fab file created by prem = kry496@my.utsa.edu for Apache Hadoop Cluster deployment in Ubuntu or CentOs """
 
-#Version of the fabfile.py found on github is the stable version of the code as of Jan 2017.
+# Version of the fabfile.py found on github is the stable version of the code as of Jan 2017.
 	- Multiple updates will be rolled into a single update by March 2017.
 	- Vagrant file pending, Security updates pending
 
-#Deploy multi-node Apache Hadoop cluster with Fabric Library and Python
-	Fabric is a ssh/fscp/ftp/bash-login-shell wrapper to run commands on local and remote hosts. 
+# Deploy multi-node Apache Hadoop cluster with Fabric Library and Python
+	#Fabric is a ssh/fscp/ftp/bash-login-shell wrapper to run commands on local and remote hosts. 
 	Project was built using Fabric 1.13 Package - Stable version as of Dec 2016
 	Tested on Ubuntu  ; support for CentOS/RHEL with SE will be added in few months 
 	Create Terminalbox( install fabric here) to run your script											
-#some Rules & Super Key Info :
+# Some Rules & Super Key Info :
 	All vms should be of same distribution, Currently it works on ubuntu\n
 	Hadoop related VMs - one MasterNode and ANY number of Slave nodes, use Virtual box. 
 	On virtual box -create the VMs with one Regular NAT adapter to use ur host os's Internet
@@ -26,14 +26,15 @@ Python Automation Framework with Fabric for APACHE+HADOOP-2.7.3+Cluster deployem
 
 
 
-#Update : 
-Tests complete on Ubuntu Nodes
+# Update : 
+	Tests complete on Ubuntu Nodes as of Jan 3rd week - 2017
+	Next set of updates are set for March 2017.
 
-#Features to be added to this project
+# Features to be added to this project
  		Vagrantfile for the intial VM setups left to be added
 		As the script runs as HDUSER, vagrant for the VMs is the best solution 
 
-#---->>  setup the Python - fabric automation framework
+# ---->>  setup the Python - fabric automation framework
 	if you never used the fabric library, read up a little :)
 	For advanced users: with understanding of Hadoop and fabric:
 	Ready made Hadoop_config_files ( from my github) needs to stored in the terminal-box(where fabric is installed)  
@@ -54,4 +55,14 @@ Tests complete on Ubuntu Nodes
 	Once HDUSER is created, uncomment the env.user variable and start the deployement with the command -->> fab deploy
 	Script will install,start and test  Hadoop, on the IPs you set on  the roledef variables in script
 	script will prompt u for password for intital ssh configs and before the cluster starts
+
+# Final Thoughts:
+	If you understand the Fabric library, All the comments should get you going 
+	Keep the Program logic in Python; Thats the magic here ! Reason I love this tool
+	letting Fabric be the wrapper to carry the commands to all the host & the host groups defined;
+	The reason why we run the script as HDUSER; 
+	The ERROR handling functionality is basic, 
+	I have used the classic method ; not using @task decorator  ; going for single flat namespace to get the job done.
+	
+	
 
