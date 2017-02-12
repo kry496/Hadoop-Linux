@@ -4,7 +4,7 @@ Python Automation Framework with Fabric for APACHE+HADOOP-2.7.3+Cluster deployem
 """ Fab file created by prem = kry496@my.utsa.edu for Apache Hadoop Cluster deployment in Ubuntu or CentOs """
 
 # Before we go forward - overview of the VMS you will need 
- 	- A seperate controller VM to install fabric - python module and and host the files found on my github. 
+ 	- A seperate controller VM to install fabric - python module and host the files found on my github. 
 	- Hadoop runs a master and multiple slave node - in the sample code i use three slave nodes in the cluster.
 	- 4 GB ram on the terminal box(controller) and 4GB ram for the Hadoop master node and 1GB each on the slaves.
 	- I used Oracle Virtual Box.
