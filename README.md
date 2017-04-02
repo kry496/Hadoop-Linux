@@ -14,7 +14,7 @@ Python Automation Framework with Fabric for APACHE+HADOOP-2.7.3+Cluster deployem
 	
 # Update : 
 	Tests complete on Ubuntu Nodes as of Jan 3rd week - 2017
-	Next set of updates are set for March 2017.
+	Next set of updates are set for April 2017.
 	- Vagrant file pending, Security updates pending
 
 # Deploy multi-node Apache Hadoop cluster with Fabric Library and Python
