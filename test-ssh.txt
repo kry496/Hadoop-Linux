@@ -1,3 +1,0 @@
-ssh-keyscan -t rsa,dsa HOST 2>&1 | sort -u /home/hduser/.ssh/known_hosts >> home/hduser/.ssh/tmp_hosts
-
-mv /home/hduser/.ssh/tmp_hosts /home/hduser/.ssh/known_hosts
